@@ -1,0 +1,1497 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Генератор поисковых запросов с весами</title>
+    <style>
+        :root {
+            --primary-color: #6a11cb;
+            --secondary-color: #2575fc;
+            --success-color: #2ecc71;
+            --danger-color: #e74c3c;
+            --warning-color: #f39c12;
+            --info-color: #3498db;
+            --light-color: #f5f7fa;
+            --dark-color: #2c3e50;
+            --text-color: #333;
+            --border-radius: 8px;
+            --box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            --transition: all 0.3s ease;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--light-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 25px;
+            box-shadow: var(--box-shadow);
+        }
+        
+        .card h2 {
+            margin-bottom: 20px;
+            color: var(--dark-color);
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 10px;
+        }
+        
+        .word-display {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            align-items: center;
+        }
+        
+        #searchQuery {
+            flex: 1;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: var(--border-radius);
+            font-size: 1.1rem;
+            transition: var(--transition);
+        }
+        
+        #searchQuery:focus {
+            border-color: var(--primary-color);
+            outline: none;
+        }
+        
+        .buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-weight: 600;
+            transition: var(--transition);
+            font-size: 1rem;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #5a0db3;
+            transform: translateY(-2px);
+        }
+        
+        .btn-secondary {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #1c68e0;
+            transform: translateY(-2px);
+        }
+        
+        .btn-success {
+            background-color: var(--success-color);
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background-color: #27ae60;
+        }
+        
+        .btn-danger {
+            background-color: var(--danger-color);
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background-color: #c0392b;
+        }
+        
+        .btn-warning {
+            background-color: var(--warning-color);
+            color: white;
+        }
+        
+        .btn-warning:hover {
+            background-color: #e67e22;
+        }
+        
+        .btn-info {
+            background-color: var(--info-color);
+            color: white;
+        }
+        
+        .btn-info:hover {
+            background-color: #2980b9;
+        }
+        
+        textarea {
+            width: 100%;
+            min-height: 150px;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: var(--border-radius);
+            resize: vertical;
+            font-size: 1rem;
+            margin-bottom: 15px;
+            transition: var(--transition);
+        }
+        
+        textarea:focus {
+            border-color: var(--primary-color);
+            outline: none;
+        }
+        
+        .search-engines {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .engine {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 15px;
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: var(--transition);
+            cursor: pointer;
+            min-width: 120px;
+            position: relative;
+        }
+        
+        .engine:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .engine-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: var(--primary-color);
+            font-size: 0.9rem;
+            text-align: center;
+            overflow: hidden;
+            background-size: cover;
+            background-position: center;
+        }
+        
+        .engine-name {
+            font-size: 0.9rem;
+            text-align: center;
+        }
+        
+        .engine-popularity {
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            background-color: #ffc107;
+            color: #333;
+            border-radius: 10px;
+            padding: 2px 6px;
+            font-size: 0.7rem;
+            font-weight: bold;
+        }
+        
+        .engine-relevance {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 10px;
+            padding: 2px 6px;
+            font-size: 0.7rem;
+            font-weight: bold;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: var(--dark-color);
+        }
+        
+        input[type="text"], input[type="file"] {
+            width: 100%;
+            padding: 10px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: var(--border-radius);
+            transition: var(--transition);
+        }
+        
+        input[type="text"]:focus {
+            border-color: var(--primary-color);
+            outline: none;
+        }
+        
+        /* Система весов */
+        .word-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .word-item {
+            display: flex;
+            align-items: center;
+            background-color: #f8f9fa;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .word-btn {
+            padding: 8px 15px;
+            background-color: transparent;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            transition: var(--transition);
+            position: relative;
+        }
+        
+        .word-btn:hover {
+            background-color: #e9ecef;
+        }
+        
+        .word-btn.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .word-btn.low-weight {
+            opacity: 0.6;
+            background-color: #e9ecef;
+        }
+        
+        .word-weight {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: var(--info-color);
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: bold;
+        }
+        
+        .weight-control {
+            display: flex;
+        }
+        
+        .weight-btn {
+            padding: 8px 12px;
+            background-color: #f8f9fa;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            transition: var(--transition);
+        }
+        
+        .weight-btn.plus {
+            color: var(--success-color);
+        }
+        
+        .weight-btn.minus {
+            color: var(--danger-color);
+        }
+        
+        .weight-btn:hover {
+            background-color: #e9ecef;
+        }
+        
+        .word-count-selector {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .word-count-selector label {
+            margin-bottom: 0;
+            font-weight: 600;
+        }
+        
+        .word-count-selector select {
+            padding: 8px 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: var(--border-radius);
+            background-color: white;
+        }
+        
+        /* Управление данными */
+        .data-management {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .data-btn {
+            flex: 1;
+            min-width: 150px;
+        }
+        
+        .data-import-area {
+            margin-top: 15px;
+            display: none;
+        }
+        
+        /* Управление поисковыми системами */
+        .engine-actions {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            display: flex;
+            gap: 5px;
+        }
+        
+        .engine-action-btn {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            padding: 0;
+            background-color: rgba(0,0,0,0.1);
+        }
+        
+        .engine-action-btn:hover {
+            background-color: rgba(0,0,0,0.2);
+        }
+        
+        .edit-engine-btn {
+            color: var(--info-color);
+        }
+        
+        .delete-engine-btn {
+            color: var(--danger-color);
+        }
+        
+        .url-parse-section {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: var(--border-radius);
+            margin-bottom: 20px;
+        }
+        
+        .url-parse-section h3 {
+            margin-bottom: 10px;
+            color: var(--dark-color);
+        }
+        
+        .engine-list {
+            margin-top: 20px;
+        }
+        
+        .engine-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 15px;
+            background-color: #f8f9fa;
+            border-radius: var(--border-radius);
+            margin-bottom: 10px;
+        }
+        
+        .engine-item-info {
+            flex: 1;
+        }
+        
+        .engine-item-name {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .engine-item-url {
+            font-size: 0.9rem;
+            color: #7f8c8d;
+            word-break: break-all;
+        }
+        
+        .engine-item-stats {
+            font-size: 0.8rem;
+            color: #7f8c8d;
+        }
+        
+        .engine-item-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .parse-words {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .parse-words input {
+            flex: 1;
+        }
+        
+        .sort-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .sort-btn {
+            padding: 8px 15px;
+            background-color: #f8f9fa;
+            border: 1px solid #e0e0e0;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: var(--transition);
+        }
+        
+        .sort-btn.active {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+        
+        .inspiration {
+            margin-top: 10px;
+            font-size: 0.8rem;
+            color: #7f8c8d;
+            text-align: center;
+        }
+        
+        @media (max-width: 768px) {
+            .word-display {
+                flex-direction: column;
+            }
+            
+            #searchQuery {
+                width: 100%;
+            }
+            
+            .buttons {
+                flex-direction: column;
+            }
+            
+            button {
+                width: 100%;
+            }
+            
+            .word-controls {
+                justify-content: center;
+            }
+            
+            .data-management {
+                flex-direction: column;
+            }
+            
+            .engine-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .engine-item-actions {
+                margin-top: 10px;
+                width: 100%;
+                justify-content: flex-end;
+            }
+            
+            .parse-words {
+                flex-direction: column;
+            }
+            
+            .sort-controls {
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Генератор поисковых запросов с весами</h1>
+        <p class="subtitle">Создавайте случайные комбинации слов с учетом ваших предпочтений</p>
+    </header>
+    
+    <div class="container">
+        <section class="card">
+            <h2>Генератор запросов</h2>
+            
+            <div class="word-count-selector">
+                <label for="wordCount">Количество слов:</label>
+                <select id="wordCount">
+                    <option value="1">1 слово</option>
+                    <option value="2" selected>2 слова</option>
+                    <option value="3">3 слова</option>
+                    <option value="4">4 слова</option>
+                </select>
+            </div>
+            
+            <div id="wordControls" class="word-controls">
+                <!-- Здесь появятся кнопки слов с контролами весов -->
+            </div>
+            
+            <div class="word-display">
+                <input type="text" id="searchQuery" placeholder="Здесь появится случайная комбинация слов">
+            </div>
+            <div class="buttons">
+                <button id="randomizeBtn" class="btn-primary">Случайная комбинация</button>
+                <button id="searchBtn" class="btn-secondary">Поиск</button>
+            </div>
+            
+            <div class="sort-controls">
+                <button id="sortByRelevance" class="sort-btn active">По релевантности</button>
+                <button id="sortByPopularity" class="sort-btn">По популярности</button>
+                <button id="sortByName" class="sort-btn">По имени</button>
+            </div>
+            
+            <div id="searchEngines" class="search-engines">
+                <!-- Здесь появятся иконки поисковых систем -->
+            </div>
+        </section>
+        
+        <section class="card">
+            <h2>Библиотека слов</h2>
+            <p>Добавляйте слова или фразы, каждое с новой строки (дубликаты будут автоматически удалены):</p>
+            <textarea id="wordLibrary" placeholder="Введите слова или фразы, каждое с новой строки"></textarea>
+            <button id="saveWords" class="btn-success">Сохранить библиотеку</button>
+        </section>
+        
+        <section class="card">
+            <h2>Добавить поисковую систему</h2>
+            
+            <div class="url-parse-section">
+                <h3>Автоматическое извлечение из ссылки</h3>
+                <div class="form-group">
+                    <label for="fullUrl">Полная ссылка с поисковым запросом (пример: https://www.youtube.com/results?search_query=bad+wife)</label>
+                    <input type="text" id="fullUrl" placeholder="Вставьте полную ссылку с поисковым запросом">
+                </div>
+                <div class="parse-words">
+                    <input type="text" id="firstWord" placeholder="Первое слово (например: bad)">
+                    <input type="text" id="secondWord" placeholder="Второе слово (например: wife)">
+                </div>
+                <button id="parseUrl" class="btn-success">Извлечь данные из ссылки</button>
+            </div>
+            
+            <div class="form-group">
+                <label for="engineName">Название сайта (для отображения)</label>
+                <input type="text" id="engineName" placeholder="Например: YouTube">
+            </div>
+            <div class="form-group">
+                <label for="engineUrl">Начало ссылки (до поискового запроса)</label>
+                <input type="text" id="engineUrl" placeholder="Например: https://www.youtube.com/results?search_query=">
+            </div>
+            <div class="form-group">
+                <label for="engineSeparator">Разделитель слов (вместо пробела)</label>
+                <input type="text" id="engineSeparator" placeholder="Например: + или %20" value="+">
+            </div>
+            <div class="form-group">
+                <label for="engineEnding">Окончание ссылки (после поискового запроса)</label>
+                <input type="text" id="engineEnding" placeholder="Например: / или &page=1 (оставьте пустым, если нет окончания)">
+            </div>
+            <div class="form-group">
+                <label for="engineIcon">URL иконки (опционально)</label>
+                <input type="text" id="engineIcon" placeholder="https://www.site.com/favicon.ico">
+            </div>
+            <button id="addEngine" class="btn-danger">Добавить поисковую систему</button>
+            <button id="updateEngine" class="btn-success" style="display: none;">Обновить поисковую систему</button>
+        </section>
+        
+        <section class="card">
+            <h2>Управление поисковыми системами</h2>
+            <p>Редактируйте или удаляйте добавленные поисковые системы:</p>
+            
+            <div id="engineList" class="engine-list">
+                <!-- Здесь появятся добавленные поисковые системы -->
+            </div>
+        </section>
+        
+        <section class="card">
+            <h2>Управление данными</h2>
+            <p>Экспортируйте, импортируйте или сбросьте все настройки:</p>
+            
+            <div class="data-management">
+                <button id="exportData" class="data-btn btn-info">Экспорт данных</button>
+                <button id="importData" class="data-btn btn-warning">Импорт данных</button>
+                <button id="resetData" class="data-btn btn-danger">Сбросить всё</button>
+                <button id="resetStats" class="data-btn btn-warning">Сбросить статистику</button>
+                <button id="resetWeights" class="data-btn btn-warning">Сбросить веса слов</button>
+            </div>
+            
+            <div id="dataImportArea" class="data-import-area">
+                <input type="file" id="importFile" accept=".json">
+                <button id="confirmImport" class="btn-success">Применить импорт</button>
+            </div>
+        </section>
+    </div>
+    
+    <footer>
+        <p>© 2025 Генератор поисковых запросов с весами. Все права защищены.</p>
+        <p class="inspiration">Вдохновитель идеи: "АСП - 0k"</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Элементы DOM
+            const searchQueryInput = document.getElementById('searchQuery');
+            const randomizeBtn = document.getElementById('randomizeBtn');
+            const searchBtn = document.getElementById('searchBtn');
+            const wordLibraryTextarea = document.getElementById('wordLibrary');
+            const saveWordsBtn = document.getElementById('saveWords');
+            const searchEnginesContainer = document.getElementById('searchEngines');
+            const engineNameInput = document.getElementById('engineName');
+            const engineUrlInput = document.getElementById('engineUrl');
+            const engineSeparatorInput = document.getElementById('engineSeparator');
+            const engineEndingInput = document.getElementById('engineEnding');
+            const engineIconInput = document.getElementById('engineIcon');
+            const addEngineBtn = document.getElementById('addEngine');
+            const updateEngineBtn = document.getElementById('updateEngine');
+            const wordCountSelect = document.getElementById('wordCount');
+            const wordControlsContainer = document.getElementById('wordControls');
+            const exportDataBtn = document.getElementById('exportData');
+            const importDataBtn = document.getElementById('importData');
+            const resetDataBtn = document.getElementById('resetData');
+            const resetStatsBtn = document.getElementById('resetStats');
+            const resetWeightsBtn = document.getElementById('resetWeights');
+            const dataImportArea = document.getElementById('dataImportArea');
+            const importFileInput = document.getElementById('importFile');
+            const confirmImportBtn = document.getElementById('confirmImport');
+            const fullUrlInput = document.getElementById('fullUrl');
+            const firstWordInput = document.getElementById('firstWord');
+            const secondWordInput = document.getElementById('secondWord');
+            const parseUrlBtn = document.getElementById('parseUrl');
+            const engineListContainer = document.getElementById('engineList');
+            const sortByNameBtn = document.getElementById('sortByName');
+            const sortByPopularityBtn = document.getElementById('sortByPopularity');
+            const sortByRelevanceBtn = document.getElementById('sortByRelevance');
+            
+            // Переменная для хранения текущего способа сортировки
+            let currentSort = 'relevance';
+            
+            // Загрузка данных из localStorage
+            let wordLibrary = JSON.parse(localStorage.getItem('wordLibrary')) || [
+                "ASMR", "whisper", "fast", "relaxing", "soft spoken", 
+                "tapping", "crinkling", "page turning", "roleplay", "medical"
+            ];
+            
+            let searchEngines = JSON.parse(localStorage.getItem('searchEngines')) || [
+                {
+                    id: 1,
+                    name: "YouTube",
+                    url: "https://www.youtube.com/results?search_query=",
+                    separator: "+",
+                    ending: "",
+                    clickCount: 0,
+                    icon: "https://www.youtube.com/favicon.ico"
+                },
+                {
+                    id: 2,
+                    name: "Vimeo",
+                    url: "https://vimeo.com/search?q=",
+                    separator: "+",
+                    ending: "",
+                    clickCount: 0,
+                    icon: "https://vimeo.com/favicon.ico"
+                }
+            ];
+            
+            // Система весов слов (теперь с начальным значением 100)
+            let wordWeights = JSON.parse(localStorage.getItem('wordWeights')) || {};
+            
+            // Система релевантности слов для поисковых систем
+            let wordEngineStats = JSON.parse(localStorage.getItem('wordEngineStats')) || {};
+            
+            // Переменная для отслеживания редактируемой поисковой системы
+            let editingEngineId = null;
+            
+            // Текущий набор сгенерированных слов
+            let currentWords = [];
+            
+            // Генерация ID для новой поисковой системы
+            function generateId() {
+                return Date.now();
+            }
+            
+            // Инициализация весов для слов, которых нет в wordWeights
+            function initializeWeights() {
+                let changed = false;
+                wordLibrary.forEach(word => {
+                    if (!wordWeights[word] || wordWeights[word] === 1) {
+                        wordWeights[word] = 100; // Начальный вес 100
+                        changed = true;
+                    }
+                });
+                
+                if (changed) {
+                    localStorage.setItem('wordWeights', JSON.stringify(wordWeights));
+                }
+            }
+            
+            // Инициализация интерфейса
+            function init() {
+                // Заполняем текстовое поле библиотеки слов
+                wordLibraryTextarea.value = wordLibrary.join('\n');
+                
+                // Инициализируем веса слов
+                initializeWeights();
+                
+                // Отображаем поисковые системы
+                renderSearchEngines();
+                
+                // Отображаем список поисковых систем для управления
+                renderEngineList();
+            }
+            
+            // Генерация случайной комбинации слов с учетом весов
+            function generateRandomQuery() {
+                if (wordLibrary.length === 0) {
+                    alert("Добавьте слова в библиотеку!");
+                    return;
+                }
+                
+                // Получаем выбранное количество слов
+                const wordCount = parseInt(wordCountSelect.value);
+                
+                // Создаем массив слов с учетом их весов
+                let weightedWords = [];
+                wordLibrary.forEach(word => {
+                    const weight = Math.round(wordWeights[word] || 100);
+                    // Добавляем слово в массив weight раз
+                    for (let i = 0; i < weight; i++) {
+                        weightedWords.push(word);
+                    }
+                });
+                
+                // Выбираем случайные слова из взвешенного массива
+                const shuffled = [...weightedWords].sort(() => 0.5 - Math.random());
+                currentWords = shuffled.slice(0, wordCount);
+                
+                // Объединяем слова с пробелами
+                searchQueryInput.value = currentWords.join(' ');
+                
+                // Отображаем контролы для выбранных слов
+                renderWordControls(currentWords);
+                
+                // Обновляем отображение поисковых систем с учетом релевантности
+                renderSearchEngines();
+            }
+            
+            // Отображение контролов для выбранных слов
+            function renderWordControls(words) {
+                wordControlsContainer.innerHTML = '';
+                
+                words.forEach(word => {
+                    const wordItem = document.createElement('div');
+                    wordItem.className = 'word-item';
+                    
+                    const wordBtn = document.createElement('button');
+                    wordBtn.className = 'word-btn';
+                    wordBtn.textContent = word;
+                    
+                    // Добавляем отображение веса слова
+                    const weight = Math.round(wordWeights[word] || 100);
+                    const weightElement = document.createElement('div');
+                    weightElement.className = 'word-weight';
+                    weightElement.textContent = weight;
+                    wordBtn.appendChild(weightElement);
+                    
+                    // Добавляем классы в зависимости от веса слова
+                    if (weight > 100) {
+                        wordBtn.classList.add('active');
+                    } else if (weight < 100) {
+                        wordBtn.classList.add('low-weight');
+                    }
+                    
+                    const weightControl = document.createElement('div');
+                    weightControl.className = 'weight-control';
+                    
+                    const plusBtn = document.createElement('button');
+                    plusBtn.className = 'weight-btn plus';
+                    plusBtn.textContent = '+';
+                    
+                    const minusBtn = document.createElement('button');
+                    minusBtn.className = 'weight-btn minus';
+                    minusBtn.textContent = '-';
+                    
+                    // Обработчики событий
+                    wordBtn.addEventListener('click', function() {
+                        increaseWeight(word);
+                        renderWordControls(words);
+                    });
+                    
+                    plusBtn.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        increaseWeight(word);
+                        renderWordControls(words);
+                    });
+                    
+                    minusBtn.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        decreaseWeight(word);
+                        renderWordControls(words);
+                    });
+                    
+                    // Собираем элемент
+                    weightControl.appendChild(plusBtn);
+                    weightControl.appendChild(minusBtn);
+                    
+                    wordItem.appendChild(wordBtn);
+                    wordItem.appendChild(weightControl);
+                    
+                    wordControlsContainer.appendChild(wordItem);
+                });
+            }
+            
+            // Увеличение веса слова (умножение на 1.2)
+            function increaseWeight(word) {
+                wordWeights[word] = (wordWeights[word] || 100) * 1.2;
+                localStorage.setItem('wordWeights', JSON.stringify(wordWeights));
+            }
+            
+            // Уменьшение веса слова (деление на 1.2)
+            function decreaseWeight(word) {
+                wordWeights[word] = (wordWeights[word] || 100) / 1.2;
+                localStorage.setItem('wordWeights', JSON.stringify(wordWeights));
+            }
+            
+            // Выполнение поиска
+            function performSearch() {
+                const query = searchQueryInput.value.trim();
+                if (!query) {
+                    alert("Введите поисковый запрос!");
+                    return;
+                }
+                
+                // Открываем каждую поисковую систему в новой вкладке
+                searchEngines.forEach(engine => {
+                    const encodedQuery = query.split(' ').join(engine.separator);
+                    const searchUrl = engine.url + encodedQuery + (engine.ending || '');
+                    window.open(searchUrl, '_blank');
+                });
+            }
+            
+            // Сохранение библиотеки слов
+            function saveWordLibrary() {
+                const words = wordLibraryTextarea.value.split('\n')
+                    .map(word => word.trim())
+                    .filter(word => word.length > 0);
+                
+                // Удаляем дубликаты
+                const uniqueWords = [...new Set(words)];
+                
+                // Сортируем слова по алфавиту
+                uniqueWords.sort((a, b) => a.localeCompare(b));
+                
+                wordLibrary = uniqueWords;
+                localStorage.setItem('wordLibrary', JSON.stringify(wordLibrary));
+                
+                // Обновляем текстовое поле отсортированными словами
+                wordLibraryTextarea.value = wordLibrary.join('\n');
+                
+                // Обновляем веса для новых слов
+                initializeWeights();
+                
+                alert("Библиотека слов сохранена, отсортирована и очищена от дубликатов!");
+            }
+            
+            // Добавление новой поисковой системы
+            function addSearchEngine() {
+                const name = engineNameInput.value.trim();
+                const url = engineUrlInput.value.trim();
+                const separator = engineSeparatorInput.value.trim();
+                const ending = engineEndingInput.value.trim();
+                const icon = engineIconInput.value.trim();
+                
+                if (!name || !url) {
+                    alert("Заполните название и URL поисковой системы!");
+                    return;
+                }
+                
+                // Проверяем, есть ли уже такая поисковая система
+                if (searchEngines.some(engine => engine.name === name && engine.id !== editingEngineId)) {
+                    alert("Поисковая система с таким названием уже существует!");
+                    return;
+                }
+                
+                if (editingEngineId) {
+                    // Обновляем существующую поисковую систему
+                    const index = searchEngines.findIndex(engine => engine.id === editingEngineId);
+                    if (index !== -1) {
+                        searchEngines[index] = {
+                            id: editingEngineId,
+                            name,
+                            url,
+                            separator,
+                            ending,
+                            clickCount: searchEngines[index].clickCount || 0,
+                            icon: icon || searchEngines[index].icon || getDefaultIcon(url)
+                        };
+                    }
+                    
+                    // Сбрасываем режим редактирования
+                    editingEngineId = null;
+                    addEngineBtn.style.display = 'block';
+                    updateEngineBtn.style.display = 'none';
+                } else {
+                    // Добавляем новую поисковую систему
+                    searchEngines.push({
+                        id: generateId(),
+                        name,
+                        url,
+                        separator,
+                        ending,
+                        clickCount: 0,
+                        icon: icon || getDefaultIcon(url)
+                    });
+                }
+                
+                localStorage.setItem('searchEngines', JSON.stringify(searchEngines));
+                
+                // Очищаем поля формы
+                engineNameInput.value = '';
+                engineUrlInput.value = '';
+                engineSeparatorInput.value = '+';
+                engineEndingInput.value = '';
+                engineIconInput.value = '';
+                
+                // Обновляем отображение
+                renderSearchEngines();
+                renderEngineList();
+                
+                alert(editingEngineId ? "Поисковая система обновлена!" : "Поисковая система добавлена!");
+            }
+            
+            // Получение иконки по умолчанию на основе URL
+            function getDefaultIcon(url) {
+                try {
+                    const domain = new URL(url).hostname;
+                    return `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
+                } catch (e) {
+                    return '';
+                }
+            }
+            
+            // Редактирование поисковой системы
+            function editSearchEngine(id) {
+                const engine = searchEngines.find(engine => engine.id === id);
+                if (engine) {
+                    // Заполняем форму данными поисковой системы
+                    engineNameInput.value = engine.name;
+                    engineUrlInput.value = engine.url;
+                    engineSeparatorInput.value = engine.separator;
+                    engineEndingInput.value = engine.ending || '';
+                    engineIconInput.value = engine.icon || '';
+                    
+                    // Переходим в режим редактирования
+                    editingEngineId = id;
+                    addEngineBtn.style.display = 'none';
+                    updateEngineBtn.style.display = 'block';
+                    
+                    // Прокручиваем к форме
+                    document.querySelector('.card h2').scrollIntoView({ behavior: 'smooth' });
+                }
+            }
+            
+            // Удаление поисковой системы
+            function deleteSearchEngine(id) {
+                if (confirm("Вы уверены, что хотите удалить эту поисковую систему?")) {
+                    searchEngines = searchEngines.filter(engine => engine.id !== id);
+                    localStorage.setItem('searchEngines', JSON.stringify(searchEngines));
+                    
+                    // Обновляем отображение
+                    renderSearchEngines();
+                    renderEngineList();
+                    
+                    alert("Поисковая система удалена!");
+                }
+            }
+            
+            // Автоматическое извлечение данных из ссылки
+            function parseUrl() {
+                const fullUrl = fullUrlInput.value.trim();
+                const firstWord = firstWordInput.value.trim();
+                const secondWord = secondWordInput.value.trim();
+                
+                if (!fullUrl) {
+                    alert("Введите ссылку для анализа!");
+                    return;
+                }
+                
+                if (!firstWord || !secondWord) {
+                    alert("Введите оба слова для поиска!");
+                    return;
+                }
+                
+                try {
+                    // Находим позиции слов в ссылке
+                    const firstWordIndex = fullUrl.indexOf(firstWord);
+                    const secondWordIndex = fullUrl.indexOf(secondWord);
+                    
+                    if (firstWordIndex === -1) {
+                        alert(`Слово "${firstWord}" не найдено в ссылке!`);
+                        return;
+                    }
+                    
+                    if (secondWordIndex === -1) {
+                        alert(`Слово "${secondWord}" не найдено в ссылке!`);
+                        return;
+                    }
+                    
+                    if (secondWordIndex <= firstWordIndex) {
+                        alert("Второе слово должно находиться после первого в ссылке!");
+                        return;
+                    }
+                    
+                    // Извлекаем части ссылки
+                    const urlStart = fullUrl.substring(0, firstWordIndex);
+                    const separator = fullUrl.substring(firstWordIndex + firstWord.length, secondWordIndex);
+                    const urlEnding = fullUrl.substring(secondWordIndex + secondWord.length);
+                    
+                    // Извлекаем доменное имя для названия
+                    let domain = '';
+                    try {
+                        const urlObj = new URL(fullUrl);
+                        domain = urlObj.hostname;
+                        if (domain.startsWith('www.')) {
+                            domain = domain.substring(4);
+                        }
+                        domain = domain.split('.')[0];
+                    } catch (e) {
+                        // Если не удалось разобрать как URL, используем первую часть домена
+                        const match = fullUrl.match(/^(?:https?:\/\/)?([^\/]+)/);
+                        if (match) {
+                            domain = match[1];
+                            if (domain.startsWith('www.')) {
+                                domain = domain.substring(4);
+                            }
+                            domain = domain.split('.')[0];
+                        }
+                    }
+                    
+                    // Заполняем поля формы
+                    engineNameInput.value = domain.charAt(0).toUpperCase() + domain.slice(1);
+                    engineUrlInput.value = urlStart;
+                    engineSeparatorInput.value = separator;
+                    engineEndingInput.value = urlEnding;
+                    engineIconInput.value = getDefaultIcon(fullUrl);
+                    
+                    alert("Данные успешно извлечены из ссылки!");
+                } catch (e) {
+                    alert("Ошибка при разборе ссылки: " + e.message);
+                }
+            }
+            
+            // Расчет релевантности поисковой системы для текущего набора слов
+            function calculateRelevance(engineId) {
+                if (!currentWords.length) return 0;
+                
+                let relevance = 0;
+                
+                currentWords.forEach(word => {
+                    // Инициализируем статистику для слова, если ее нет
+                    if (!wordEngineStats[word]) {
+                        wordEngineStats[word] = {};
+                    }
+                    
+                    // Добавляем баллы за это слово для данной поисковой системы
+                    relevance += wordEngineStats[word][engineId] || 0;
+                });
+                
+                return relevance;
+            }
+            
+            // Обновление статистики релевантности при клике на поисковую систему
+            function updateRelevanceStats(engineId) {
+                currentWords.forEach(word => {
+                    // Инициализируем статистику для слова, если ее нет
+                    if (!wordEngineStats[word]) {
+                        wordEngineStats[word] = {};
+                    }
+                    
+                    // Увеличиваем счетчик для данного слова и поисковой системы
+                    wordEngineStats[word][engineId] = (wordEngineStats[word][engineId] || 0) + 1;
+                });
+                
+                // Сохраняем обновленную статистику
+                localStorage.setItem('wordEngineStats', JSON.stringify(wordEngineStats));
+            }
+            
+            // Сортировка поисковых систем
+            function sortEngines() {
+                if (currentSort === 'name') {
+                    searchEngines.sort((a, b) => a.name.localeCompare(b.name));
+                } else if (currentSort === 'popularity') {
+                    searchEngines.sort((a, b) => (b.clickCount || 0) - (a.clickCount || 0));
+                } else { // relevance
+                    searchEngines.sort((a, b) => {
+                        const relevanceA = calculateRelevance(a.id);
+                        const relevanceB = calculateRelevance(b.id);
+                        return relevanceB - relevanceA;
+                    });
+                }
+            }
+            
+            // Отображение поисковых систем
+            function renderSearchEngines() {
+                searchEnginesContainer.innerHTML = '';
+                
+                // Сортируем поисковые системы перед отображением
+                sortEngines();
+                
+                if (searchEngines.length === 0) {
+                    searchEnginesContainer.innerHTML = '<p>Нет добавленных поисковых систем. Добавьте первую в разделе ниже.</p>';
+                    return;
+                }
+                
+                searchEngines.forEach(engine => {
+                    const engineElement = document.createElement('div');
+                    engineElement.className = 'engine';
+                    
+                    const relevance = calculateRelevance(engine.id);
+                    const popularity = engine.clickCount || 0;
+                    
+                    engineElement.title = `Поиск на ${engine.name}\nПереходов: ${popularity}\nРелевантность: ${relevance}`;
+                    
+                    const iconStyle = engine.icon ? `background-image: url('${engine.icon}')` : '';
+                    const iconContent = engine.icon ? '' : engine.name.substring(0, 2);
+                    
+                    engineElement.innerHTML = `
+                        <div class="engine-actions">
+                            <button class="engine-action-btn edit-engine-btn" data-id="${engine.id}">✏️</button>
+                            <button class="engine-action-btn delete-engine-btn" data-id="${engine.id}">🗑️</button>
+                        </div>
+                        <div class="engine-popularity">${popularity}</div>
+                        <div class="engine-relevance">${relevance}</div>
+                        <div class="engine-icon" style="${iconStyle}">${iconContent}</div>
+                        <div class="engine-name">${engine.name}</div>
+                    `;
+                    
+                    engineElement.addEventListener('click', function(e) {
+                        // Игнорируем клики по кнопкам действий
+                        if (!e.target.closest('.engine-actions')) {
+                            const query = searchQueryInput.value.trim();
+                            if (!query) {
+                                alert("Сначала сгенерируйте или введите поисковый запрос!");
+                                return;
+                            }
+                            
+                            // Увеличиваем счетчик кликов
+                            engine.clickCount = (engine.clickCount || 0) + 1;
+                            localStorage.setItem('searchEngines', JSON.stringify(searchEngines));
+                            
+                            // Обновляем статистику релевантности
+                            updateRelevanceStats(engine.id);
+                            
+                            const encodedQuery = query.split(' ').join(engine.separator);
+                            const searchUrl = engine.url + encodedQuery + (engine.ending || '');
+                            window.open(searchUrl, '_blank');
+                            
+                            // Обновляем отображение счетчиков
+                            const popularityElement = engineElement.querySelector('.engine-popularity');
+                            const relevanceElement = engineElement.querySelector('.engine-relevance');
+                            popularityElement.textContent = engine.clickCount;
+                            relevanceElement.textContent = calculateRelevance(engine.id);
+                            engineElement.title = `Поиск на ${engine.name}\nПереходов: ${engine.clickCount}\nРелевантность: ${calculateRelevance(engine.id)}`;
+                            
+                            // Перерисовываем для обновления порядка
+                            renderSearchEngines();
+                        }
+                    });
+                    
+                    // Обработчики для кнопок действий
+                    const editBtn = engineElement.querySelector('.edit-engine-btn');
+                    const deleteBtn = engineElement.querySelector('.delete-engine-btn');
+                    
+                    editBtn.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        editSearchEngine(parseInt(this.getAttribute('data-id')));
+                    });
+                    
+                    deleteBtn.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        deleteSearchEngine(parseInt(this.getAttribute('data-id')));
+                    });
+                    
+                    searchEnginesContainer.appendChild(engineElement);
+                });
+            }
+            
+            // Отображение списка поисковых систем для управления
+            function renderEngineList() {
+                engineListContainer.innerHTML = '';
+                
+                if (searchEngines.length === 0) {
+                    engineListContainer.innerHTML = '<p>Нет добавленных поисковых систем</p>';
+                    return;
+                }
+                
+                searchEngines.forEach(engine => {
+                    const engineItem = document.createElement('div');
+                    engineItem.className = 'engine-item';
+                    
+                    engineItem.innerHTML = `
+                        <div class="engine-item-info">
+                            <div class="engine-item-name">${engine.name}</div>
+                            <div class="engine-item-url">${engine.url}[ЗАПРОС]${engine.ending || ''}</div>
+                            <div class="engine-item-url">Разделитель: "${engine.separator}"</div>
+                            <div class="engine-item-stats">Переходов: ${engine.clickCount || 0}</div>
+                        </div>
+                        <div class="engine-item-actions">
+                            <button class="edit-engine-btn" data-id="${engine.id}">Редактировать</button>
+                            <button class="delete-engine-btn" data-id="${engine.id}">Удалить</button>
+                        </div>
+                    `;
+                    
+                    // Обработчики для кнопок
+                    const editBtn = engineItem.querySelector('.edit-engine-btn');
+                    const deleteBtn = engineItem.querySelector('.delete-engine-btn');
+                    
+                    editBtn.addEventListener('click', function() {
+                        editSearchEngine(parseInt(this.getAttribute('data-id')));
+                    });
+                    
+                    deleteBtn.addEventListener('click', function() {
+                        deleteSearchEngine(parseInt(this.getAttribute('data-id')));
+                    });
+                    
+                    engineListContainer.appendChild(engineItem);
+                });
+            }
+            
+            // Экспорт данных
+            function exportData() {
+                const data = {
+                    wordLibrary: wordLibrary,
+                    searchEngines: searchEngines,
+                    wordWeights: wordWeights,
+                    wordEngineStats: wordEngineStats
+                };
+                
+                const dataStr = JSON.stringify(data, null, 2);
+                const dataBlob = new Blob([dataStr], {type: 'application/json'});
+                
+                const url = URL.createObjectURL(dataBlob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = 'search-generator-data.json';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+                
+                alert("Данные экспортированы в файл search-generator-data.json");
+            }
+            
+            // Импорт данных
+            function importData() {
+                dataImportArea.style.display = 'block';
+            }
+            
+            // Подтверждение импорта данных
+            function confirmImport() {
+                const file = importFileInput.files[0];
+                
+                if (!file) {
+                    alert("Выберите файл для импорта!");
+                    return;
+                }
+                
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    try {
+                        const data = JSON.parse(e.target.result);
+                        
+                        // Проверяем структуру данных
+                        if (!data.wordLibrary || !data.searchEngines || !data.wordWeights) {
+                            throw new Error("Неверный формат данных");
+                        }
+                        
+                        // Применяем импортированные данные
+                        wordLibrary = data.wordLibrary;
+                        searchEngines = data.searchEngines;
+                        wordWeights = data.wordWeights;
+                        wordEngineStats = data.wordEngineStats || {};
+                        
+                        // Сохраняем в localStorage
+                        localStorage.setItem('wordLibrary', JSON.stringify(wordLibrary));
+                        localStorage.setItem('searchEngines', JSON.stringify(searchEngines));
+                        localStorage.setItem('wordWeights', JSON.stringify(wordWeights));
+                        localStorage.setItem('wordEngineStats', JSON.stringify(wordEngineStats));
+                        
+                        // Обновляем интерфейс
+                        wordLibraryTextarea.value = wordLibrary.join('\n');
+                        renderSearchEngines();
+                        renderEngineList();
+                        dataImportArea.style.display = 'none';
+                        importFileInput.value = '';
+                        
+                        // Генерируем новый запрос
+                        generateRandomQuery();
+                        
+                        alert("Данные успешно импортированы!");
+                    } catch (e) {
+                        alert("Ошибка при импорте данных: " + e.message);
+                    }
+                };
+                
+                reader.readAsText(file);
+            }
+            
+            // Сброс всех данных
+            function resetData() {
+                if (confirm("Вы уверены, что хотите сбросить все данные? Это действие нельзя отменить.")) {
+                    localStorage.clear();
+                    location.reload();
+                }
+            }
+            
+            // Сброс статистики
+            function resetStats() {
+                if (confirm("Вы уверены, что хотите сбросить статистику переходов и релевантности?")) {
+                    searchEngines.forEach(engine => {
+                        engine.clickCount = 0;
+                    });
+                    
+                    wordEngineStats = {};
+                    
+                    localStorage.setItem('searchEngines', JSON.stringify(searchEngines));
+                    localStorage.setItem('wordEngineStats', JSON.stringify(wordEngineStats));
+                    
+                    renderSearchEngines();
+                    renderEngineList();
+                    
+                    alert("Статистика переходов и релевантности сброшена!");
+                }
+            }
+            
+            // Сброс весов слов
+            function resetWeights() {
+                if (confirm("Вы уверены, что хотите сбросить все веса слов к начальным значениям (100)?")) {
+                    wordLibrary.forEach(word => {
+                        wordWeights[word] = 100;
+                    });
+                    
+                    localStorage.setItem('wordWeights', JSON.stringify(wordWeights));
+                    
+                    // Перерисовываем контролы слов
+                    if (currentWords.length > 0) {
+                        renderWordControls(currentWords);
+                    }
+                    
+                    alert("Веса слов сброшены к начальным значениям!");
+                }
+            }
+            
+            // Назначаем обработчики событий
+            randomizeBtn.addEventListener('click', generateRandomQuery);
+            searchBtn.addEventListener('click', performSearch);
+            saveWordsBtn.addEventListener('click', saveWordLibrary);
+            addEngineBtn.addEventListener('click', addSearchEngine);
+            updateEngineBtn.addEventListener('click', addSearchEngine);
+            exportDataBtn.addEventListener('click', exportData);
+            importDataBtn.addEventListener('click', importData);
+            resetDataBtn.addEventListener('click', resetData);
+            resetStatsBtn.addEventListener('click', resetStats);
+            resetWeightsBtn.addEventListener('click', resetWeights);
+            confirmImportBtn.addEventListener('click', confirmImport);
+            parseUrlBtn.addEventListener('click', parseUrl);
+            
+            sortByNameBtn.addEventListener('click', function() {
+                currentSort = 'name';
+                sortByNameBtn.classList.add('active');
+                sortByPopularityBtn.classList.remove('active');
+                sortByRelevanceBtn.classList.remove('active');
+                renderSearchEngines();
+            });
+            
+            sortByPopularityBtn.addEventListener('click', function() {
+                currentSort = 'popularity';
+                sortByPopularityBtn.classList.add('active');
+                sortByNameBtn.classList.remove('active');
+                sortByRelevanceBtn.classList.remove('active');
+                renderSearchEngines();
+            });
+            
+            sortByRelevanceBtn.addEventListener('click', function() {
+                currentSort = 'relevance';
+                sortByRelevanceBtn.classList.add('active');
+                sortByNameBtn.classList.remove('active');
+                sortByPopularityBtn.classList.remove('active');
+                renderSearchEngines();
+            });
+            
+            // Инициализируем приложение
+            init();
+            
+            // Генерируем первый запрос при загрузке
+            generateRandomQuery();
+        });
+    </script>
+</body>
+</html>
